@@ -86,7 +86,7 @@ struct {
 	
 	.c = {
 		/* Canon EOS 600D */
-		.f_mm = 14,
+		.f_mm = 24,
 		.sdim_mm = { .x = 22.3, .y = 14.9 },
 		.sdim = { .x = 5344, .y = 3516 },
 		.angle = {
@@ -111,8 +111,8 @@ int
 main(int argc, char *argv[])
 {
 	char *fnR = (argc > 1) ? argv[1] : "/dev/stdout";
-	char *fnG = (argc > 1) ? argv[2] : "/dev/stdout";
-	char *fnB = (argc > 1) ? argv[3] : "/dev/stdout";
+	char *fnG = (argc > 2) ? argv[2] : "/dev/stdout";
+	char *fnB = (argc > 3) ? argv[3] : "/dev/stdout";
 
 	Image *im;
 	
