@@ -33,7 +33,7 @@ struct RealRect {
 #define dRx(r) (dPx((r).min, (r).max))
 #define dRy(r) (dPy((r).min, (r).max))
 #define PinR(p, r) ( PleP((r).min, (p)) && PltP((p), (r).max) )
-#define RinR(r1, r2) ( PleP((r2).min, (r1).min) && PleP((r1)max, (r2).max) )
+#define RinR(r1, r2) ( PleP((r2).min, (r1).min) && PleP((r1).max, (r2).max) )
 
 #define P2rowM(r, p) ( dPy((r).min, (pt)) * dRx((r)) + dPx((r).min, (pt)) )
 #define P2colM(r, p) ( dPx((r).min, (pt)) * dRy((r)) + dPy((r).min, (pt)) )

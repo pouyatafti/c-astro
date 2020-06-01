@@ -3,4 +3,10 @@
 
 #define nil ( (void *) 0 )
 
+typedef struct llnode llnode;
+struct llnode {
+	llnode *next;
+	void *data;
+};
+
 #endif
