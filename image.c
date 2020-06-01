@@ -178,7 +178,7 @@ bbox(Image *im)
 
 	if (!ch) return r;
 
-	r = im->ch++[0]->r;
+	r = ch++[0]->r;
 
 	for (i = 1; i < im->nchans; i++, ch++) {
 		r.min.x = r.min.x <= (*ch)->r.min.x ? r.min.x :  (*ch)->r.min.x;

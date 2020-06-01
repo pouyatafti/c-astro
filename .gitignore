@@ -1,3 +1,4 @@
 *.o
 _playground/
 examples/startrack
+examples/deformation
