@@ -1,4 +1,5 @@
 Copyright (c) 2020, Pouya Tafti
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -23,3 +24,14 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+***
+
+THIRD PARTY CODE
+
+This repository includes third party code exclusively under the directory
+
+	3rdparty/
+
+Additional copyright notices and license terms applicable to third party
+code under the directory 3rdparty/ are included therein.
