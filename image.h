@@ -51,6 +51,8 @@ void freechan(Channel *ch);
 Image *newim(CompositeType typ);
 void freeim(Image *im);
 
+Rect bbox(Image *im);
+
 /* actual pixel (or nil if non-existent) */
 void *pixelptr(Image *im, int chan, Point pt);
 

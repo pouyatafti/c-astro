@@ -169,6 +169,27 @@ freeim(Image *im)
 	free(im);
 }
 
+Rect
+bbox(Image *im)
+{
+	int i;
+	Channel **ch = im->chans;
+	Rect r = {{0}, {0}};
+
+	if (!ch) return r;
+
+	r = im->ch++[0]->r;
+
+	for (i = 1; i < im->nchans; i++, ch++) {
+		r.min.x = r.min.x <= (*ch)->r.min.x ? r.min.x :  (*ch)->r.min.x;
+		r.min.y = r.min.y <= (*ch)->r.min.y ? r.min.y :  (*ch)->r.min.y;
+		r.max.x = r.max.x >= (*ch)->r.max.x ? r.max.x :  (*ch)->r.max.x;
+		r.max.y = r.max.y >= (*ch)->r.max.y ? r.max.y :  (*ch)->r.max.y;
+	}
+
+	return r;
+}
+
 void *
 pixelptr(Image *im, int chan, Point pt)
 {

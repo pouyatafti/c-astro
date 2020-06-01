@@ -65,8 +65,8 @@ hz2eq(HorizontalLocation hz, GeodeticLocation geod, double jdutc, double dut1, d
 	
 	EquatorialLocation eq;
 	eq.ra = gst + geod.lng - h;
-	//eq.dec = asin(w);
-	eq.dec = atan2(w, sqrt(u*u+v*v));
+	eq.dec = asin(w);
+	//eq.dec = atan2(w, sqrt(u*u+v*v));
 
 	return eq;
 }
