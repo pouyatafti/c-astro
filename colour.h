@@ -18,13 +18,14 @@ struct RGBc {
 
 /* RGB index */
 typedef struct RGBi RGBi;
-struct RGBc {
+struct RGBi {
 	int ri;
 	int gi;
 	int bi;
 };
 
-typedef struct SCProfile SCProfile {
+typedef struct SCProfile SCProfile;
+struct SCProfile {
 	int depth;		/* depth per channel in bits */
 	CIExyY red;
 	CIExyY grn;
@@ -36,7 +37,7 @@ typedef struct SCProfile SCProfile {
 	double *gcR;
 	double *gcG;
 	double *gcB;
-}
+};
 
 SCProfile *newscprofile(int depth, CIExyY red, CIExyY grn, CIExyY blu, double gR, double gG, double gB);
 void freescprofile(SCProfile *cp);
