@@ -14,7 +14,6 @@
 void user_write(png_structp png, png_bytep data, size_t len);
 void user_flush(png_structp png);
 
-void pack(long len, int bytesize, uint8_t *target, uint8_t *r, uint8_t *g, uint8_t *b);
 
 int 
 wtpng(Image *im, int chan, char *fn)
@@ -102,19 +101,6 @@ wtpng_cleanup:
 	if (f != nil) fclose(f);
 
 	return retval;
-}
-
-void
-pack(long len, int bytesize, uint8_t *target, uint8_t *r, uint8_t *g, uint8_t *b)
-{
-	long i;
-	int j;
-
-	for (i = 0; i < len*bytesize; i++) {
-		for (j = 0; j < bytesize; j++) *target++ = *r++;
-		for (j = 0; j < bytesize; j++) *target++ = *g++;
-		for (j = 0; j < bytesize; j++) *target++ = *b++;		
-	}
 }
 
 void

@@ -28,9 +28,15 @@ struct RealRect {
 /* utility functions for Rect and Point */
 #define dPx(p1,p2) ((p2).x-(p1).x)
 #define dPy(p1,p2) ((p2).y-(p1).y)
+#define PltP(p1, p2) ( (p1).x < (p2).x && (p1).y < (p2).y )
+#define PleP(p1, p2) ( (p1).x <= (p2).x && (p1).y <= (p2).y )
 #define dRx(r) (dPx((r).min, (r).max))
 #define dRy(r) (dPy((r).min, (r).max))
-#define PinR(p, r) ( ((p).x >= (r).min.x) && ((p).y >= (r).min.y) && ((p).x < (r).max.x) && ((p).y < (r).max.y) )
+#define PinR(p, r) ( PleP((r).min, (p)) && PltP((p), (r).max) )
+#define RinR(r1, r2) ( PleP((r2).min, (r1).min) && PleP((r1)max, (r2).max) )
+
+#define P2rowM(r, p) ( dPy((r).min, (pt)) * dRx((r)) + dPx((r).min, (pt)) )
+#define P2colM(r, p) ( dPx((r).min, (pt)) * dRy((r)) + dPy((r).min, (pt)) )
 
 typedef struct Rational Rational;
 struct Rational {

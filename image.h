@@ -16,6 +16,7 @@ enum ChannelDataType {
 	IDuint8,
 	IDuint16
 };
+
 #define chanbytesize(dtyp) ( (dtyp) == IDuint8 ? 1 : 2 )
 
 typedef struct Channel Channel;
@@ -36,6 +37,8 @@ enum CompositeType {
 	Irgb_bayer_rggb_uint8,
 	Irgb_bayer_rggb_uint16
 };
+
+#define imchanbytesize(typ) ( ((typ)==Imono_uint8 || (typ)==Irgb_uint8 || (typ)==Irgb_bayer_rggb_uint8) ? 1 : 2 )
 
 typedef struct Image Image;
 struct Image {
@@ -60,6 +63,9 @@ void *pixelptr(Image *im, int chan, Point pt);
 #define npixelptr(im, chan, pt) ( pixelptr(im, chan, roundlc(im->chans[chan]->lc, pt)) )
 //#define npixelptr(im, chan, pt) ( pixelptr(im, chan, (Point){.x = pt.x, .y = pt.y}) )
 
+int packrgb(void *dest, void *r, void *g, void *b, long len, int destBs, int srcBs, int padding);
+
 uint8_t endianness();
+int nsetbits(uint64_t i);
 
 #endif

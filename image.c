@@ -204,7 +204,7 @@ pixelptr(Image *im, int chan, Point pt)
 	if (!PinLc(pt, ch->lc))
 		return nil;
 
-	idx = dPy((ch->r).min, pt) * dRx(ch->r) + dPx((ch->r).min, pt);
+	idx = P2rowM(ch->r, pt);
 
 	switch (ch->dtyp) {
 		case IDuint8:
@@ -214,6 +214,49 @@ pixelptr(Image *im, int chan, Point pt)
 		default:
 			return nil;
 	}
+}
+
+int
+packrgb(void *dest, void *r, void *g, void *b, long len, int destBs, int srcBs, int padding)
+{
+	long i;
+	int j;
+
+	uint8_t *d8 = dest, *r8 = r, *g8 = g, *b8 = b;
+	uint16_t *d16 = dest, *r16 = r, *g16 = g, *b16 = b;
+
+	switch (destBs + 2*srcBs - 3) {
+		case 0:
+			for (i = 0, j = padding; i < len; i++) {
+				*d8++ = *r8++;
+				*d8++ = *g8++;
+				*d8++ = *b8++;
+				while (j--) *d8++ = 0x00;
+			}
+			break;
+		case 1:
+			for (i = 0, j = padding; i < len; i++) {
+				*d16++ = *r8++;
+				*d16++ = *g8++;
+				*d16++ = *b8++;
+				d8 = (uint8_t *)d16;
+				while (j--) *d8++ = 0x00;
+			}
+			break;
+		case 3:
+			for (i = 0, j = padding; i < len; i++) {
+				*d16++ = *r16++;
+				*d16++ = *g16++;
+				*d16++ = *b16++;
+				d8 = (uint8_t *)d16;
+				while (j--) *d8++ = 0x00;
+			}
+			break;
+		default:
+			return -1;
+	}
+
+	return 0;
 }
 
 /* return values:
@@ -230,5 +273,17 @@ endianness()
 		uint8_t i8[4];
 	} i = { .i32 = 0x0a0b0c0d };
 
-	return i.i8[4];
+	return i.i8[0];
+}
+
+int
+nsetbits(uint64_t i)
+{
+	int n;
+	while (i) {
+		i >>= 1;
+		n += i & 1;
+	}
+
+	return n;
 }
