@@ -49,45 +49,53 @@ main(int argc, char *argv[])
 
 	Rect r;
 
+	wtlog(1, "opening connection...\n");
 	if (!(ctxt.c = newconn(nil))) {
-		errmsg = "view: cannot open X11 connection\n";
+		errmsg = "cannot open X11 connection\n";
 		goto main_cleanup;
 	}
 
+	wtlog(1, "getting display...\n");
 	if (!(ctxt.disp = newdisplay(ctxt.c, 0, nil))) {
-		errmsg = "view: cannot get X11 display\n";
+		errmsg = "cannot get X11 display\n";
 		goto main_cleanup;
 	}
 
+	wtlog(1, "loading image...\n");
 	if (!(ctxt.im = rdim(fn))) {
-		errmsg = "view: cannot load image\n";
+		errmsg = "cannot load image\n";
 		goto main_cleanup;
 	}
 	
 	r = bbox(ctxt.im);
 
+	wtlog(1, "creating raster...\n");
 	if (!(ctxt.rst = newraster(ctxt.disp, r))) {
-		errmsg = "view: cannot allocate raster\n";
+		errmsg = "cannot create raster\n";
 		goto main_cleanup;
 	}
 
-	if (!ldraster(ctxt.rst, ctxt.im, r, r)) {
-		errmsg = "view: cannot copy image to X11 raster\n";
+	wtlog(1, "loading image into raster...\n");
+	if (ldraster(ctxt.rst, ctxt.im, r, r)) {
+		errmsg = "cannot copy image to X11 raster\n";
 		goto main_cleanup;
 	}
 
+	wtlog(1, "creating window...\n");
 	if (!(ctxt.w = newwin(ctxt.disp->root, r))) {
-		errmsg = "view: cannot create X11 window\n";
+		errmsg = "cannot create X11 window\n";
 		goto main_cleanup;
 	}
 
+	wtlog(1, "creating event stream...\n");
 	if (!(ctxt.evs = newevs(ctxt.c))) {
-		errmsg = "view: cannot create event stream\n";
+		errmsg = "cannot create event stream\n";
 		goto main_cleanup;
 	}
 
-	if (!regevs(ctxt.evs, ctxt.w, EMwin | EMmouse | EMkbd)) {
-		errmsg = "view: cannot register for events\n";
+	wtlog(1, "registering events...\n");
+	if (regevs(ctxt.evs, ctxt.w, EMwin | EMmouse | EMkbd)) {
+		errmsg = "cannot register for events\n";
 		goto main_cleanup;
 	}
 
@@ -95,6 +103,7 @@ main(int argc, char *argv[])
 
 	draw(ctxt.w, ctxt.rst, r);
 
+	wtlog(1, "entering event loop...\n");
 	while (pt_status(&pt_wevent) == 0 && pt_status(&pt_recvm) == 0 && pt_status(&pt_recvk) == 0 && pt_status(&pt_recvw) == 0) {
 		fetchevs(&pt_wevent, ctxt.evs);
 

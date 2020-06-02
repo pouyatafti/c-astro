@@ -4,7 +4,7 @@
 #define __CASTRO_SYS_H__
 
 #ifndef DEBUG_LEVEL
-#define DEBUG_LEVEL 10
+#define DEBUG_LEVEL 0
 #endif
 
 #define wtlog(level, ...) if (level <= DEBUG_LEVEL) { fprintf(stdout, "%s:%d in function '%s': ", __FILE__, __LINE__, __func__); fprintf(stdout, __VA_ARGS__); }

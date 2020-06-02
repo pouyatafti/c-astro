@@ -63,6 +63,7 @@ regevs(Wevents *we, Win *w, uint32_t mask)
 {
 	llnode *node;
 	xcb_void_cookie_t cookie;
+	xcb_generic_error_t *err;
 
 	if (!wid2win(we, w->id)) {
 		if ((node = malloc(sizeof(llnode))) == nil)
@@ -78,8 +79,10 @@ regevs(Wevents *we, Win *w, uint32_t mask)
 
 	cookie = xcb_change_window_attributes_checked(we->c, w->id, XCB_CW_EVENT_MASK, &(we->mask));
 
-	if (xcb_request_check(we->c, cookie))
+	if ((err = xcb_request_check(we->c, cookie))) {
+		free(err);
 		return -2;
+	}
 
 	return 0;
 }
@@ -88,14 +91,17 @@ int
 unregevs(Wevents *we, Win *w, uint32_t mask)
 {
 	xcb_void_cookie_t cookie;
+	xcb_generic_error_t *err;
 
 	/* XXX this will be wrong if something goes wrong in the request */
 	we->mask &= ~mask;
 
 	cookie = xcb_change_window_attributes_checked(we->c, w->id, XCB_CW_EVENT_MASK, &(we->mask));
 
-	if (xcb_request_check(we->c, cookie))
+	if ((err = xcb_request_check(we->c, cookie))) {
+		free(err);
 		return -2;
+	}
 
 	return 0;
 }

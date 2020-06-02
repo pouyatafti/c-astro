@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <xcb/xcb.h>
@@ -7,6 +8,7 @@
 #include "../3rdparty/pt/pt.h"
 
 #include "../c.h"
+#include "../sys.h"
 
 #include "../algebra.h"
 #include "../colour.h"
@@ -27,6 +29,7 @@ newconn(char *connstr)
 	Connection *c = xcb_connect(connstr, &n);
 
 	if (xcb_connection_has_error(c)) {
+		wtlog(1,"X connection has errors\n");
 		freeconn(c);
 		return nil;
 	}
@@ -50,10 +53,12 @@ newdisplay(Connection *c, int n, SCProfile *cp)
 	xcb_depth_iterator_t diter;
 	xcb_visualtype_iterator_t viter;
 	xcb_void_cookie_t cookie;
+	xcb_generic_error_t *err;
 
 	int depth; /* depth per channel */
 
 	if ((d=calloc(1, sizeof(Display))) == nil) {
+		wtlog(1,"can't alloc display\n");
 		return nil;
 	}
 
@@ -67,11 +72,13 @@ newdisplay(Connection *c, int n, SCProfile *cp)
 		}
 
 	if (d->s == nil) {
+		wtlog(1,"can't find root window\n");
 		freedisplay(d);
 		return nil;
 	}
 
 	if ((d->root=calloc(1, sizeof(Win))) == nil) {
+		wtlog(1,"can't alloc root window\n");
 		freedisplay(d);
 		return nil;
 	}
@@ -92,11 +99,13 @@ newdisplay(Connection *c, int n, SCProfile *cp)
 	}
 
 	if (d->v == nil) {
+		wtlog(1,"can't find root visual\n");
 		freedisplay(d);
 		return nil;
 	}
 
 	if (d->v->_class != XCB_VISUAL_CLASS_TRUE_COLOR && d->v->_class != XCB_VISUAL_CLASS_DIRECT_COLOR) {
+		wtlog(1,"unsupported root visual\n");
 		freedisplay(d);
 		return nil;
 	}
@@ -104,7 +113,9 @@ newdisplay(Connection *c, int n, SCProfile *cp)
 	d->gc0id = xcb_generate_id(d->c);
 	cookie = xcb_create_gc_checked(d->c, d->gc0id, d->s->root, XCB_GC_FOREGROUND | XCB_GC_BACKGROUND, (uint32_t[]) { d->s->black_pixel, d->s->white_pixel });
 
-	if (xcb_request_check(d->c, cookie)) {
+	if ((err = xcb_request_check(d->c, cookie))) {
+		wtlog(1,"can't create gcontext\n");
+		free(err);
 		freedisplay(d);
 		return nil;
 	}
@@ -113,33 +124,39 @@ newdisplay(Connection *c, int n, SCProfile *cp)
 	//depth = d->v->bits_per_rgb_value;
 
 	/* we require all channels to have the same depth */
-	depth = nsetbits(d->v->red_mask);
+	depth = nsetbits((uint64_t)d->v->red_mask);
 	if (nsetbits(d->v->green_mask) != depth) {
+		wtlog(1,"green and red channels have different depths (%d vs %d) with masks %08x and  %08x\n", nsetbits(d->v->green_mask), depth, d->v->green_mask, d->v->red_mask);
 		freedisplay(d);
 		return nil;
 	}
 	if (nsetbits(d->v->blue_mask) != depth) {
+		wtlog(1,"blue and red channels have different depths (%d vs %d) with masks %08x and  %08x\n", nsetbits(d->v->blue_mask), depth, d->v->blue_mask, d->v->red_mask);
 		freedisplay(d);
 		return nil;
 	}
 	if (depth == 0) {
+		wtlog(1,"bad depth\n");
 		freedisplay(d);
 		return nil;
 	}
 
 	if (cp != nil) {
 		if ((d->cp = newscprofile(depth, cp->red, cp->grn, cp->blu, cp->wht, cp->gR, cp->gG, cp->gB)) == nil) {
+			wtlog(1,"can't create new custom colour profile\n");
 			freedisplay(d);
 			return nil;
 		}
 	} else {
 		/* default */
 		if ((d->cp = newscprofile0(depth)) == nil) {
+			wtlog(1,"can't create new default colour profile\n");
 			freedisplay(d);
 			return nil;
 		}
 	}
 
+	wtlog(1,"d = %p\n", d);
 	return d;
 }
 
@@ -174,10 +191,12 @@ newwin(Win *parent, Rect r)
 {
 	Win *w;
 	xcb_void_cookie_t cookie;
+	xcb_generic_error_t *err;
 
 	if (!parent) return nil;
 
 	if ((w = calloc(1, sizeof(Win))) == nil) {
+		wtlog(1,"can't alloc win\n");
 		return nil;
 	}
 
@@ -189,7 +208,9 @@ newwin(Win *parent, Rect r)
 	
 	cookie = xcb_create_window_checked(w->disp->c, XCB_COPY_FROM_PARENT, w->id, parent->id, r.min.x, r.min.y, dRx(r), dRy(r), BORDER_WIDTH, XCB_WINDOW_CLASS_INPUT_OUTPUT, w->disp->vid, 0, nil);
 
-	if (xcb_request_check(w->disp->c, cookie)) {
+	if ((err = xcb_request_check(w->disp->c, cookie))) {
+		wtlog(1,"can't create win\n");
+		free(err);
 		freewin(w);
 		return nil;
 	}
@@ -231,9 +252,12 @@ int
 showwin(Win *w)
 {
 	xcb_void_cookie_t cookie = xcb_map_window_checked(w->disp->c, w->id);
+	xcb_generic_error_t *err;
 
-	if (xcb_request_check(w->disp->c, cookie))
+	if (err = xcb_request_check(w->disp->c, cookie)) {
+		free(err);
 		return -1;
+	}
 
 	return 0;
 }
@@ -242,9 +266,12 @@ int
 hidewin(Win *w)
 {
 	xcb_void_cookie_t cookie = xcb_unmap_window_checked(w->disp->c, w->id);
+	xcb_generic_error_t *err;
 
-	if (xcb_request_check(w->disp->c, cookie))
+	if ((err = xcb_request_check(w->disp->c, cookie))) {
+		free(err);
 		return -1;
+	}
 
 	return 0;
 }
@@ -254,11 +281,14 @@ movewin(Win *w, Rect r)
 {
 	uint16_t mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
 	uint32_t values[] = { r.min.x, r.min.y, dRx(r), dRy(r) };
+	xcb_generic_error_t *err;
 
 	xcb_void_cookie_t cookie = xcb_configure_window_checked(w->disp->c, w->id, mask, values);
 
-	if (xcb_request_check(w->disp->c, cookie))
+	if ((err = xcb_request_check(w->disp->c, cookie))) {
+		free(err);
 		return -1;
+	}
 
 	return 0;
 }
@@ -268,6 +298,7 @@ drawraster(Win *w, Raster *rst, Rect r_from, Rect r_to)
 {
 	int wd, ht;
 	xcb_void_cookie_t cookie;
+	xcb_generic_error_t *err;
 
 	if (rst->disp != w->disp) return -1;
 
@@ -279,7 +310,8 @@ drawraster(Win *w, Raster *rst, Rect r_from, Rect r_to)
 
 	cookie = xcb_copy_area_checked(w->disp->c, rst->id, w->id, w->disp->gc0id, r_from.min.x, r_from.min.y, r_to.min.x, r_to.min.y, wd, ht);
 
-	if (xcb_request_check(rst->disp->c, cookie)) {
+	if ((err = xcb_request_check(rst->disp->c, cookie))) {
+		free(err);
 		return -2;
 	}
 
@@ -292,10 +324,12 @@ newraster(Display *disp, Rect r)
 {
 	Raster *rst;
 	xcb_void_cookie_t cookie;
+	xcb_generic_error_t *err;
 
 	if (!disp) return nil;
 
 	if ((rst = calloc(1, sizeof(Raster))) == nil) {
+		wtlog(1,"can't alloc raster\n");
 		return nil;
 	}
 
@@ -303,9 +337,12 @@ newraster(Display *disp, Rect r)
 	rst->id = xcb_generate_id(disp->c);
 	rst->r = r;
 	
-	cookie = xcb_create_pixmap_checked(rst->disp->c, XCB_COPY_FROM_PARENT, rst->id, rootwin(rst->disp).id, dRx(r), dRy(r));
+	wtlog(2, "id = %d, wd = %d, ht = %d\n", rst->id, dRx(r), dRy(r));
+	cookie = xcb_create_pixmap_checked(rst->disp->c, rst->disp->s->root_depth, rst->id, rootwin(rst->disp).id, dRx(r), dRy(r));
 
-	if (xcb_request_check(rst->disp->c, cookie)) {
+	if ((err = xcb_request_check(rst->disp->c, cookie))) {
+		wtlog(1,"can't create raster: error %d in op %d.%d\n", err->error_code, err->major_code, err->minor_code);
+		free(err);
 		freeraster(rst);
 		return nil;
 	}

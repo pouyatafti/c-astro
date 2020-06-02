@@ -1,5 +1,5 @@
 CC = gcc
-CCFLAGS = -Wall -g -std=c99 -DDEBUG_LEVEL=1
+CCFLAGS = -Wall -g -std=c99 -DDEBUG_LEVEL=10
 INCLUDEDIR = ./
 LDFLAGS = -lm
 
