@@ -206,7 +206,7 @@ newwin(Win *parent, Rect r)
 	w->r = r;
 	w->visible = 0;
 	
-	cookie = xcb_create_window_checked(w->disp->c, XCB_COPY_FROM_PARENT, w->id, parent->id, r.min.x, r.min.y, dRx(r), dRy(r), BORDER_WIDTH, XCB_WINDOW_CLASS_INPUT_OUTPUT, w->disp->vid, 0, nil);
+	cookie = xcb_create_window_checked(w->disp->c, XCB_COPY_FROM_PARENT, w->id, parent->id, r.min.x, r.min.y, dRx(r), dRy(r), BORDER_WIDTH, XCB_WINDOW_CLASS_INPUT_OUTPUT, w->disp->vid, XCB_CW_BACK_PIXEL, &w->disp->s->black_pixel);
 
 	if ((err = xcb_request_check(w->disp->c, cookie))) {
 		wtlog(1,"can't create win\n");

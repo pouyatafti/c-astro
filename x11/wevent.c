@@ -116,17 +116,28 @@ fetchevs(struct pt *pt, Wevents *we)
 	for (;;) {
 		pt_wait(pt, ev = xcb_poll_for_event(we->c));
 
-		if (ev->response_type & 0x7f & X_MOUSE_EVENT_RESPONSE)
-			pt_queue_push(&we->mq, unpackmouse(we, ev));
-
-		if (ev->response_type & 0x7f & X_MOUSE_EVENT_RESPONSE)
-			pt_queue_push(&we->kq, unpackkbd(we, ev));
-
-		if (ev->response_type & 0x7f & X_WIN_EVENT_RESPONSE)
-			pt_queue_push(&we->wq, unpackwin(we, ev));
-
-		if ((ev->response_type & 0x7f) == 0) /* error */
-			pt_queue_push(&we->wq, unpackwin(we, ev));
+		switch (ev->response_type & 0x7f) {
+			case XCB_BUTTON_PRESS:
+			case XCB_BUTTON_RELEASE:
+			case XCB_MOTION_NOTIFY:
+			case XCB_ENTER_NOTIFY:
+			case XCB_LEAVE_NOTIFY:
+				pt_queue_push(&we->mq, unpackmouse(we, ev));
+				break;
+			case XCB_KEY_PRESS:
+			case XCB_KEY_RELEASE:
+				pt_queue_push(&we->kq, unpackkbd(we, ev));
+				break;
+			case XCB_EXPOSE:
+			case XCB_CONFIGURE_NOTIFY:
+			case XCB_MAP_NOTIFY:
+			case XCB_UNMAP_NOTIFY:
+			case 0:
+				pt_queue_push(&we->wq, unpackwin(we, ev));
+				break;
+			default:
+				break;
+		}
 
 		free(ev);
 	}
