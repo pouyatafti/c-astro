@@ -11,6 +11,8 @@ typedef xcb_connection_t Connection;
 Connection *newconn(char *connstr);
 void freeconn(Connection *c);
 
+int flushconn(Connection *c);
+
 
 typedef struct Display Display;
 struct Display {
@@ -38,8 +40,6 @@ struct Win {
 
 Win *newwin(Win *parent, Rect r);
 void freewin(Win *w);
-
-int flushwin(Win *w);
 
 Win rootwin(Display *disp);
 

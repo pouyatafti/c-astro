@@ -43,6 +43,12 @@ freeconn(Connection *c)
 	xcb_disconnect(c);
 }
 
+int
+flushconn(Connection *c)
+{
+	return xcb_flush(c) <= 0;
+}
+
 
 Display *
 newdisplay(Connection *c, int n, SCProfile *cp)
@@ -215,7 +221,7 @@ newwin(Win *parent, Rect r)
 		return nil;
 	}
 
-	flushwin(w);
+	flushconn(w->disp->c);
 
 	return w;
 }
@@ -226,12 +232,6 @@ freewin(Win *w)
 	if (w->id) xcb_destroy_window(w->disp->c, w->id);
 
 	free(w);
-}
-
-int
-flushwin(Win *w)
-{
-	return xcb_flush(w->disp->c) > 0;
 }
 
 Win

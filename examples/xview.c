@@ -104,13 +104,14 @@ main(int argc, char *argv[])
 	draw(ctxt.w, ctxt.rst, r);
 
 	wtlog(1, "entering event loop...\n");
-	while (pt_status(&pt_wevent) == 0 && pt_status(&pt_recvm) == 0 && pt_status(&pt_recvk) == 0 && pt_status(&pt_recvw) == 0) {
+	do {
 		fetchevs(&pt_wevent, ctxt.evs);
 
 		recvmouse(&pt_recvm, &ctxt);
 		recvkbd(&pt_recvk, &ctxt);
 		recvwin(&pt_recvw, &ctxt);
-	}
+	} while (pt_status(&pt_wevent) == 0 && pt_status(&pt_recvm) == 0 && pt_status(&pt_recvk) == 0 && pt_status(&pt_recvw) == 0);
+
 
 main_cleanup:
 	cleanup(&ctxt);
@@ -146,6 +147,7 @@ recvwin(struct pt *pt, struct Ctxt *ctxt)
 
 		e = pt_queue_pop(&ctxt->evs->wq);
 
+		wtlog(1, "t = %d, typ = %d\n", e->t, e->typ);
 		/* XXX */
 		if (e->typ == WEerror)
 			pt_exit(pt, 1);
@@ -168,6 +170,7 @@ recvmouse(struct pt *pt, struct Ctxt *ctxt)
 
 		e = pt_queue_pop(&ctxt->evs->mq);
 
+		wtlog(1, "t = %d, typ = %d\n", e->t, e->typ);
 		/* XXX */
 	}
 
@@ -186,6 +189,7 @@ recvkbd(struct pt *pt, struct Ctxt *ctxt)
 
 		e = pt_queue_pop(&ctxt->evs->kq);
 
+		wtlog(1, "t = %d, typ = %d\n", e->t, e->typ);
 		/* XXX */
 	}
 
@@ -196,5 +200,5 @@ int
 draw(Win *w, Raster *rst, Rect r)
 {
 	drawraster(w, rst, r, r);
-	return flushwin(w);
+	return flushconn(w->disp->c);
 }
