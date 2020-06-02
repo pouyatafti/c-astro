@@ -40,27 +40,27 @@ wtpng(Image *im, int chan, char *fn)
 	depthb = depthB * 8;
 	colour = PNG_COLOR_TYPE_GRAY;
 
-	wtlog(10, "wtpng: fn = %s, wd = %d, ht = %d, depthb = %d, colour = %d, ch->data = %p\n", fn, wd, ht, depthb, colour, (void *)(ch->data));
+	wtlog(10, "fn = %s, wd = %d, ht = %d, depthb = %d, colour = %d, ch->data = %p\n", fn, wd, ht, depthb, colour, (void *)(ch->data));
 
 	if ((f = fopen(fn, "wb")) == nil) {
-		errmsg = "wtpng: cannot open file\n";
+		errmsg = "cannot open file\n";
 		goto wtpng_error;
 	}
 
-	wtlog(10, "wtpng: f = %p\n", f);
+	wtlog(10, "f = %p\n", f);
 
 	if ((png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nil, nil, nil)) == nil) {
-		errmsg = "wtpng: cannot allocate memory\n";
+		errmsg = "cannot allocate memory\n";
 		goto wtpng_error;
 	}	
 
 	if ((info = png_create_info_struct(png)) == nil) {
-		errmsg = "wtpng: cannot allocate memory\n";
+		errmsg = "cannot allocate memory\n";
 		goto wtpng_error;
 	}
 
 	if (setjmp(png_jmpbuf(png))) {
-		errmsg = "wtpng: error while creating png file\n";
+		errmsg = "error while creating png file\n";
 		goto wtpng_error;
 	}
 
@@ -70,14 +70,14 @@ wtpng(Image *im, int chan, char *fn)
 	png_set_IHDR(png, info, wd, ht, depthb, colour, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_set_oFFs(png, info, ch->r.min.x, ch->r.min.y, PNG_OFFSET_PIXEL);
 
-	wtlog(10, "wtpng: writing info...\n");
+	wtlog(10, "writing info...\n");
 	png_write_info(png, info);
 
 	if (depthB > 1 && endianness() != 0x0a) /* not big endian */ {
 		png_set_swap(png);
 	}
 
-	wtlog(10, "wtpng: writing rows...\n");
+	wtlog(10, "writing rows...\n");
 
 	for (i = 0, row = ch->data; i < ht; i++, row += depthB*wd) {
 		png_write_row(png, row);

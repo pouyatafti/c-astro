@@ -133,13 +133,13 @@ main(int argc, char *argv[])
 	prefix = (argc > 1) ? argv[1] : "";
 
 	if ((src = newmono16(ctxt.r)) == nil) {
-		errmsg = "deformation: cannot allocate memory\n";
+		errmsg = "cannot allocate memory\n";
 		ret = -1;
 		goto main_error;
 	}
 
 	if ((dest = newmono16(ctxt.r)) == nil) {
-		errmsg = "deformation: cannot allocate memory\n";
+		errmsg = "cannot allocate memory\n";
 		ret = -1;
 		goto main_error;
 	}
@@ -150,7 +150,7 @@ main(int argc, char *argv[])
 
 		snprintf(fn, MAX_PATH_LEN, "%s%05d.png", prefix, i);
 		if (wtpng(dest, 0, fn)) {
-			wterror("deformation: cannot write to file\n");
+			wterror("cannot write to file\n");
 			ret = -2;
 			goto main_error;
 		}

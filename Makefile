@@ -9,14 +9,15 @@ IMAGE_PNG_OBJS=io/lpng.o
 TELESCOPE_OBJS=telescope.o
 X11_OBJS=colour.c x11/draw.o x11/wevent.o
 
+EXAMPLES=examples/startrack examples/deformation examples/xview
 
-examples: examples/startrack examples/deformation examples/xview
+examples: ${EXAMPLES}
 
 clean:
 	rm -f *.o
 	rm -f */*.o
-	rm -f examples/startrack
-	rm -f examples/deformation
+	rm -f ${EXAMPLES}
+
 
 .SUFFIXES: .c .o
 

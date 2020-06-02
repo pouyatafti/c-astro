@@ -27,42 +27,42 @@ rdcraw2(char *fn)
 	Craw2IfdTag *tag;
 
 	if ((f = fopen(fn, "rb") == nil) {
-		errmsg = "rdcraw2: cannot open file\n";
+		errmsg = "cannot open file\n";
 		goto rdcraw2_error;
 	}
 
 	if (fread(&hdr, sizeof(Craw2Header), 1, f) < 1) {
-		errmsg = "rdcraw2: cannot read from file\n";
+		errmsg = "cannot read from file\n";
 		goto rdcraw2_error;
 	}
 
 	if ((hdr.byteorder != CR2_HDR_LTENDIAN) || (hdr.tiffmagic != CR2_HDR_TIFFMAGIC) || (hdr.cr2magic != CR2_HDR_CR2MAGIC) || (hdr.cr2version != CR2_HDR_CR2VERSION)) {
-		errmsg = "rdcraw2: unsupported file format\n";
+		errmsg = "unsupported file format\n";
 		goto rdcraw2_error;
 	}
 
 	if (fsetpos(f, hdr.ifdrawoffset)) {
-		errmsg = "rdcraw2: cannot read from file\n";
+		errmsg = "cannot read from file\n";
 		goto rdcraw2_error;
 	}
 
 	if (fread(&(ifd.tagcount), 2, 1, f) < 1) {
-		errmsg = "rdcraw2: cannot read from file\n";
+		errmsg = "cannot read from file\n";
 		goto rdcraw2_error;
 	}
 
 	if ((ifd.tags = malloc(ifd.tagcount*sizeof(Craw2IfdTag))) == nil) {
-		errmsg = "rdcraw2: cannot allocate memory\n";
+		errmsg = "cannot allocate memory\n";
 		goto rdcraw2_error;
 	}
 
 	if (fread(ifd.tags, sizeof(Craw2IfdTag), ifd.tagcount, f) < 1) {
-		errmsg = "rdcraw2: cannot read from file\n";
+		errmsg = "cannot read from file\n";
 		goto rdcraw2_error;
 	}
 
 	if (fread(&(ifd.nextifdoffset), 4, 1, f) < 1) {
-		errmsg = "rdcraw2: cannot read from file\n";
+		errmsg = "cannot read from file\n";
 		goto rdcraw2_error;
 	}
 

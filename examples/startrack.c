@@ -132,30 +132,30 @@ main(int argc, char *argv[])
 		.max = { .x = ctxt.c.sdim.x/2, .y = ctxt.c.sdim.y/2 }
 	};
 
-	wtlog(0, "startrack: allocating image...\n");
+	wtlog(0, "allocating image...\n");
 	if ((im = newim(Irgb_uint8)) == nil) {
-		wterror("startrack: cannot allocate memory\n");
+		wterror("cannot allocate memory\n");
 		return -1;
 	}
 
-	wtlog(0, "startrack: allocating channel...\n");	
+	wtlog(0, "allocating channel...\n");	
 	if (initchan(im->chans[0], r)) {
-		wterror("startrack: cannot allocate memory\n");
+		wterror("cannot allocate memory\n");
 		freeim(im);
 		return -1;
 	}
 	if (initchan(im->chans[1], r)) {
-		wterror("startrack: cannot allocate memory\n");
+		wterror("cannot allocate memory\n");
 		freeim(im);
 		return -1;
 	}
 	if (initchan(im->chans[2], r)) {
-		wterror("startrack: cannot allocate memory\n");
+		wterror("cannot allocate memory\n");
 		freeim(im);
 		return -1;
 	}
 
-	wtlog(0, "startrack: calculating trajectory...\n");
+	wtlog(0, "calculating trajectory...\n");
 	for (t = ctxt.jd_start, i = 0; t < ctxt.jd_end; t += ctxt.jd_step, i++) {
 		if (EQUATORIAL_FIX) {
 			/* move camera */
@@ -169,7 +169,7 @@ main(int argc, char *argv[])
 			pt = hz2pixel(&ctxt.c, hz);
 
 			if ((i % 100) == 0) {
-				wtlog(1, "\nstartrack: object % 2d: [% 3.4f, % 3.4f]\t", j, rad2deg(hz.az), 90 - rad2deg(hz.z));
+				wtlog(1, "object % 2d: [% 3.4f, % 3.4f]\t", j, rad2deg(hz.az), 90 - rad2deg(hz.z));
 				wtlog(1, "[% 4.2f, % 4.2f] ", pt.x, pt.y);
 			}
 
@@ -195,26 +195,26 @@ main(int argc, char *argv[])
 
 	}
 
-	wtlog(0, "startrack: writing image...\n");
+	wtlog(0, "writing image...\n");
 /*
 	if (wtim(im, fn)) {
-		wterror("startrack: cannot write to file\n");
+		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
 */
 	if (wtpng(im, 0, fnR)) {
-		wterror("startrack: cannot write to file\n");
+		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
 	if (wtpng(im, 1, fnG)) {
-		wterror("startrack: cannot write to file\n");
+		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
 	if (wtpng(im, 2, fnB)) {
-		wterror("startrack: cannot write to file\n");
+		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
