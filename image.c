@@ -227,7 +227,7 @@ packrgb(void *dest, void *r, void *g, void *b, long len, int destBs, int srcBs, 
 
 	switch (destBs + 2*srcBs - 3) {
 		case 0:
-			for (i = 0, j = padding; i < len; i++) {
+			for (i = 0, j = padding; i < len; i++, j = padding) {
 				*d8++ = *r8++;
 				*d8++ = *g8++;
 				*d8++ = *b8++;
@@ -235,7 +235,7 @@ packrgb(void *dest, void *r, void *g, void *b, long len, int destBs, int srcBs, 
 			}
 			break;
 		case 1:
-			for (i = 0, j = padding; i < len; i++) {
+			for (i = 0, j = padding; i < len; i++, j = padding) {
 				*d16++ = *r8++;
 				*d16++ = *g8++;
 				*d16++ = *b8++;
@@ -244,7 +244,7 @@ packrgb(void *dest, void *r, void *g, void *b, long len, int destBs, int srcBs, 
 			}
 			break;
 		case 3:
-			for (i = 0, j = padding; i < len; i++) {
+			for (i = 0, j = padding; i < len; i++, j = padding) {
 				*d16++ = *r16++;
 				*d16++ = *g16++;
 				*d16++ = *b16++;
