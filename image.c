@@ -279,10 +279,10 @@ endianness()
 int
 nsetbits(uint64_t i)
 {
-	int n;
+	int n = 0;
 	while (i) {
-		i >>= 1;
 		n += i & 1;
+		i >>= 1;
 	}
 
 	return n;
