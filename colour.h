@@ -15,7 +15,7 @@ struct CIExyY {
 	double Y;
 };
 
-/* RGB values */
+/* RGB values (linear) */
 typedef struct RGBc RGBc;
 struct RGBc {
 	double r;
@@ -31,32 +31,54 @@ struct RGBi {
 	int B;
 };
 
-typedef struct SCProfile SCProfile;
-struct SCProfile {
+typedef struct CProfile CProfile;
+struct CProfile {
 	int depth;		/* depth per channel in bits */
 	CIExyY red;
 	CIExyY grn;
 	CIExyY blu;
 	CIExyY wht;
+	RGBc X;
+	RGBc Y;
+	RGBc Z;
 	double gR;
 	double gG;
 	double gB;
 	double *gcR;
 	double *gcG;
 	double *gcB;
+	double (*gRfun)(double r, double gR);
+	double (*gGfun)(double g, double gG);
+	double (*gBfun)(double b, double gB);
 };
 
-SCProfile *newscprofile(int depth, CIExyY red, CIExyY grn, CIExyY blu, CIExyY wht, double gR, double gG, double gB);
-void freescprofile(SCProfile *cp);
+CProfile *newcp(int depth);
+void freecp(CProfile *cp);
 
-SCProfile *newscprofile0(int depth);
+void
+initcp(
+	CProfile *cp,
+	CIExyY red, CIExyY grn, CIExyY blu, CIExyY wht,
+	double gR, double gG, double gB,
+	double (*gRfun)(double r, double gR),
+	double (*gGfun)(double g, double gG),
+	double (*gBfun)(double b, double gB)
+);
 
-RGBc xyY2rgbc(SCProfile *cp, CIExyY c);
-CIExyY rgbc2xyY(SCProfile *cp, RGBc c);
+void initsRGB(CProfile *cp);
+
+double sRGBgamma(double u, double g);
+
+RGBc xyY2RGBc(CProfile *cp, CIExyY c);
+CIExyY RGBc2xyY(CProfile *cp, RGBc c);
+
+RGBc i2RGBc(CProfile *cp, RGBi c);
+RGBi c2RGBi(CProfile *cp, RGBc c);
+
+#define xyY2X(xyY) ( (xyY).x/(xyY).y*(xyY).Y )
+#define xyY2Y(xyY) ( (xyY).Y )
+#define xyY2Z(xyY) ( (1 - (xyY).x - (xyY).y)/(xyY).y*(xyY).Y )
 
 #define rgbc2rgbc(cpin, cpout, c) ( xyY2rgbc(cpout, rgbc2xyY(cpin, c)) )
-
-#define rgbc2i(cp, c) ( (RGBi){ .R = roundi(c.r * (double)(2<<cp->depth)), .G = roundi(c.g * (double)(2<<cp->depth)), .B = roundi(c.g * (double)(2<<cp->depth)) } )
-#define i2rgbc(cp, c) ( (RGBc){ .r = cp->gcR[c.R], .g = cp->gcG[c.G], .b = cp->gcB[c.B] } )
 
 #endif

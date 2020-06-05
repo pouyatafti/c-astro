@@ -51,7 +51,7 @@ flushconn(Connection *c)
 
 
 Display *
-newdisplay(Connection *c, int n, SCProfile *cp)
+newdisplay(Connection *c, int n, CProfile *cp)
 {
 	Display *d;
 
@@ -147,19 +147,15 @@ newdisplay(Connection *c, int n, SCProfile *cp)
 		return nil;
 	}
 
+	if ((d->cp = newcp(depth)) == nil) {
+		wtlog(1,"can't create new custom colour profile\n");
+		freedisplay(d);
+		return nil;
+	}
 	if (cp != nil) {
-		if ((d->cp = newscprofile(depth, cp->red, cp->grn, cp->blu, cp->wht, cp->gR, cp->gG, cp->gB)) == nil) {
-			wtlog(1,"can't create new custom colour profile\n");
-			freedisplay(d);
-			return nil;
-		}
+		initcp(cp, cp->red, cp->grn, cp->blu, cp->wht, cp->gR, cp->gG, cp->gB, cp->gRfun, cp->gGfun, cp->gBfun);
 	} else {
-		/* default */
-		if ((d->cp = newscprofile0(depth)) == nil) {
-			wtlog(1,"can't create new default colour profile\n");
-			freedisplay(d);
-			return nil;
-		}
+		initsRGB(cp);
 	}
 
 	wtlog(1,"d = %p\n", d);
@@ -170,7 +166,7 @@ void
 freedisplay(Display *d)
 {
 	if (d->cp) {
-		freescprofile(d->cp);
+		freecp(d->cp);
 	}
 
 	if (d->root) {

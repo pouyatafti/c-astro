@@ -22,10 +22,10 @@ struct Display {
 	xcb_visualid_t vid;
 	xcb_visualtype_t *v;
 	xcb_gcontext_t gc0id;
-	SCProfile *cp;
+	CProfile *cp;
 };
 
-Display *newdisplay(Connection *c, int n, SCProfile *cp);
+Display *newdisplay(Connection *c, int n, CProfile *cp);
 void freedisplay(Display *d);
 
 
