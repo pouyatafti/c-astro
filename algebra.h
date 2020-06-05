@@ -85,7 +85,4 @@ Point roundlc(Lattice lc, RealPoint pt); /* nearest lattice point */
 #define lc2ix(l, p) ( (l).uix.num*((p).x-(l).o.x)/(l).uix.den + (l).uiy.num*((p).y-(l).o.y)/(l).uiy.den )
 #define lc2iy(l, p) ( (l).vix.num*((p).x-(l).o.x)/(l).vix.den + (l).viy.num*((p).y-(l).o.y)/(l).viy.den )
 
-Lattice lcinverse(Lattice lc);
-
 #endif
-
