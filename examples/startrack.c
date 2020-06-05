@@ -17,8 +17,8 @@
 #include "sample_data.h"
 
 #define N_OBJECTS 6
-
 #define EQUATORIAL_FIX 0
+#define MAX_PATH_LEN 256
 
 struct {
 	EquatorialLocation *object;
@@ -55,6 +55,7 @@ init()
 	ctxt.DUT1 = sample_DUT1;
 	ctxt.DT = sample_DT;
 
+	ctxt.c.f_mm = 14.0;
 	ctxt.r = (Rect){
 		/* these are not the actual camera image dimensions ! */
 		.min = { .x = -ctxt.c.sdim.x/2 - ctxt.c.sdim.x%2, .y = -ctxt.c.sdim.y/2 - ctxt.c.sdim.y%2 },
@@ -65,7 +66,7 @@ init()
 int
 main(int argc, char *argv[])
 {
-	char *fn = (argc > 1) ? argv[1] : "/dev/stdout";
+	char *prefix = (argc > 1) ? argv[1] : "", fn[MAX_PATH_LEN];
 
 	Image *im;
 	
@@ -145,28 +146,32 @@ main(int argc, char *argv[])
 
 	wtlog(0, "writing image...\n");
 
+	snprintf(fn, MAX_PATH_LEN, "%sRGB.raw", prefix);
 	if (wtim(im, fn)) {
 		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
-/*
-	if (wtpng(im, 0, fnR)) {
+
+	snprintf(fn, MAX_PATH_LEN, "%sR.png", prefix);
+	if (wtpng(im, 0, fn)) {
 		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
-	if (wtpng(im, 1, fnG)) {
+	snprintf(fn, MAX_PATH_LEN, "%sG.png", prefix);
+	if (wtpng(im, 1, fn)) {
 		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
-	if (wtpng(im, 2, fnB)) {
+	snprintf(fn, MAX_PATH_LEN, "%sB.png", prefix);
+	if (wtpng(im, 2, fn)) {
 		wterror("cannot write to file\n");
 		freeim(im);
 		return -1;
 	}
-*/
+
 	freeim(im);
 	return 0;		
 }

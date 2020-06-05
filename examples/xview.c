@@ -17,7 +17,6 @@
 #include "../x11/draw.h"
 #include "../x11/wevent.h"
 
-
 struct Ctxt {
 	Connection *c;
 	Display *disp;
