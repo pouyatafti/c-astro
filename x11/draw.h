@@ -3,7 +3,7 @@
 #ifndef __CASTRO_X11_DRAW_H__
 #define __CASTRO_X11_DRAW_H__
 
-#define BORDER_WIDTH 5
+#define BORDER_WIDTH 0
 
 
 typedef xcb_connection_t Connection;
@@ -47,6 +47,7 @@ int showwin(Win *w);
 int hidewin(Win *w);
 int movewin(Win *w, Rect r);
 
+void updatewin(Win *w);
 
 typedef struct Raster Raster;
 struct Raster {

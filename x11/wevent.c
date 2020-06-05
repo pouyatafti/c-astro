@@ -165,6 +165,7 @@ unpackwin(Wevents *we, xcb_generic_event_t *ev)
 		case WEexpose: {
 			xcb_expose_event_t *xev = (xcb_expose_event_t *)ev;
 			wid = xev->window;
+			e.w = wid2win(we, wid);
 			e.data.r = (Rect){
 				 .min = { .x = xev->x, .y = xev->y},
 				 .max = { .x = xev->width, .y = xev->height}};
@@ -175,30 +176,43 @@ unpackwin(Wevents *we, xcb_generic_event_t *ev)
 		case WEmove: {
 			xcb_configure_notify_event_t *xev = (xcb_configure_notify_event_t *)ev;
 			wid = xev->window;
+			e.w = wid2win(we, wid);
+			updatewin(e.w);
+/*
 			e.data.r = (Rect){
 				 .min = { .x = xev->x, .y = xev->y},
 				 .max = { .x = xev->width, .y = xev->height}};
 			e.data.r.max.x += e.data.r.min.x;
 			e.data.r.max.y += e.data.r.min.y;
+			e.w->r = e.data.r;
+*/
+			e.data.r = e.w->r;
+
 			break;
 		}
 		case WEshow: {
 			xcb_map_notify_event_t *xev = (xcb_map_notify_event_t *)ev;
 			wid = xev->window;
+			e.w = wid2win(we, wid);
 			e.data.visible = 1;
+
+			e.w->visible = e.data.visible;
+
 			break;
 		}
 		case WEhide: {
 			xcb_unmap_notify_event_t *xev = (xcb_unmap_notify_event_t *)ev;
 			wid = xev->window;
+			e.w = wid2win(we, wid);
 			e.data.visible = 0;
+
+			e.w->visible = e.data.visible;
+
 			break;
 		}
 		default:
 			break;
 	}
-
-	e.w = wid2win(we, wid);
 
 	return e;
 }

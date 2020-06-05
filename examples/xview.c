@@ -29,7 +29,7 @@ struct Ctxt {
 
 void cleanup(struct Ctxt *ctxt);
 
-int draw(Win *w, Raster *rst, Rect r);
+int draw(Win *w, Raster *rst);
 
 void recvwin(struct pt *pt, struct Ctxt *ctxt);
 void recvkbd(struct pt *pt, struct Ctxt *ctxt);
@@ -47,7 +47,7 @@ main(int argc, char *argv[])
 
 	struct Ctxt ctxt = { 0 };
 
-	Rect r;
+	Rect Rim, Rrst;
 
 	wtlog(1, "opening connection...\n");
 	if (!(ctxt.c = newconn(nil))) {
@@ -67,22 +67,23 @@ main(int argc, char *argv[])
 		goto main_cleanup;
 	}
 	
-	r = bbox(ctxt.im);
+	Rim = bbox(ctxt.im);
+	Rrst = (Rect){ {0, 0}, {dRx(Rim), dRy(Rim)} };
 
 	wtlog(1, "creating raster...\n");
-	if (!(ctxt.rst = newraster(ctxt.disp, r))) {
+	if (!(ctxt.rst = newraster(ctxt.disp, Rrst))) {
 		errmsg = "cannot create raster\n";
 		goto main_cleanup;
 	}
 
 	wtlog(1, "loading image into raster...\n");
-	if (ldraster(ctxt.rst, ctxt.im, r, r)) {
+	if (ldraster(ctxt.rst, ctxt.im, Rim, Rrst)) {
 		errmsg = "cannot copy image to X11 raster\n";
 		goto main_cleanup;
 	}
 
 	wtlog(1, "creating window...\n");
-	if (!(ctxt.w = newwin(ctxt.disp->root, r))) {
+	if (!(ctxt.w = newwin(ctxt.disp->root, Rrst))) {
 		errmsg = "cannot create X11 window\n";
 		goto main_cleanup;
 	}
@@ -101,7 +102,7 @@ main(int argc, char *argv[])
 
 	showwin(ctxt.w);
 
-	draw(ctxt.w, ctxt.rst, r);
+	draw(ctxt.w, ctxt.rst);
 
 	wtlog(1, "entering event loop...\n");
 	do {
@@ -147,11 +148,29 @@ recvwin(struct pt *pt, struct Ctxt *ctxt)
 
 		e = pt_queue_pop(&ctxt->evs->wq);
 
-		wtlog(1, "t = %d, typ = %d\n", e->t, e->typ);
-		/* XXX */
+		switch (e->typ) {
+			case WEexpose:
+				wtlog(1, "WEexpose %dx%d+%d+%d\n", dRx(e->data.r), dRy(e->data.r), e->data.r.min.x, e->data.r.min.y);
+				break;
+			case WEmove:
+				wtlog(1, "WEmove %dx%d+%d+%d\n", dRx(e->data.r), dRy(e->data.r), e->data.r.min.x, e->data.r.min.y);
+				break;
+			case WEshow:
+				wtlog(1, "WEshow\n");
+				break;
+			case WEhide:
+				wtlog(1, "WEhide\n");
+				break;
+			case WEerror:
+				wtlog(1, "WEerror\n");
+				pt_exit(pt, 1);
+				break;
+			default:
+				break;
+		}
 		if (e->typ == WEerror)
 			pt_exit(pt, 1);
-		if (draw(ctxt->w, ctxt->rst, ctxt->w->r))
+		if (draw(ctxt->w, ctxt->rst))
 			pt_exit(pt, 2);
 	}
 
@@ -197,8 +216,7 @@ recvkbd(struct pt *pt, struct Ctxt *ctxt)
 }
 
 int
-draw(Win *w, Raster *rst, Rect r)
+draw(Win *w, Raster *rst)
 {
-	drawraster(w, rst, r, r);
-	return flushconn(w->disp->c);
+	return drawraster(w, rst, rst->r, (Rect){ {0, 0}, {dRx(w->r), dRy(w->r)} });
 }

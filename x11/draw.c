@@ -223,6 +223,7 @@ newwin(Win *parent, Rect r)
 
 	flushconn(w->disp->c);
 
+	updatewin(w);
 	return w;
 }
 
@@ -254,11 +255,14 @@ showwin(Win *w)
 	xcb_void_cookie_t cookie = xcb_map_window_checked(w->disp->c, w->id);
 	xcb_generic_error_t *err;
 
-	if (err = xcb_request_check(w->disp->c, cookie)) {
+	if ((err = xcb_request_check(w->disp->c, cookie))) {
 		free(err);
 		return -1;
 	}
 
+	w->visible = 1;
+
+	updatewin(w);
 	return 0;
 }
 
@@ -272,6 +276,8 @@ hidewin(Win *w)
 		free(err);
 		return -1;
 	}
+
+	w->visible = 0;
 
 	return 0;
 }
@@ -287,10 +293,29 @@ movewin(Win *w, Rect r)
 
 	if ((err = xcb_request_check(w->disp->c, cookie))) {
 		free(err);
+		updatewin(w);
 		return -1;
 	}
 
+	updatewin(w);
 	return 0;
+}
+
+void
+updatewin(Win *w)
+{
+	xcb_get_geometry_reply_t *reply;
+
+	reply = xcb_get_geometry_reply(w->disp->c, xcb_get_geometry(w->disp->c, w->id), nil);
+
+	if (reply) {
+		w->r.min.x = reply->x;
+		w->r.min.y = reply->y;
+		w->r.max.x = w->r.min.x + reply->width;
+		w->r.max.y = w->r.min.y + reply->height;
+
+		free(reply);
+	}
 }
 
 int
@@ -302,11 +327,18 @@ drawraster(Win *w, Raster *rst, Rect r_from, Rect r_to)
 
 	if (rst->disp != w->disp) return -1;
 
-	if (!RinR(r_from, rst->r)) return -1;
-	if (!RinR(r_to, w->r)) return -1;
+	wd = dRx(r_from); 
+	wd = wd <= dPx(r_to.min, w->r.max) ? wd : dPx(r_to.min, w->r.max);
 
-	if ((wd = dRx(r_from)) != dRx(r_to)) return -1;
-	if ((ht = dRy(r_from)) != dRy(r_to)) return -1;
+	ht = dRy(r_from);
+	ht = ht <= dPy(r_to.min, w->r.max) ? ht : dPy(r_to.min, w->r.max);
+
+	wtlog(1, "win: %dx%d+%d+%d  rst: %dx%d+%d+%d  from: %dx%d+%d+%d  to: %dx%d+%d+%d  final: %dx%d...\n",
+		dRx(w->r), dRy(w->r), w->r.min.x, w->r.min.y,
+		dRx(rst->r), dRy(rst->r), rst->r.min.x, rst->r.min.y,
+		dRx(r_from), dRy(r_from), r_from.min.x, r_from.min.y,
+		dRx(r_to), dRy(r_to), r_to.min.x, r_to.min.y,
+		wd, ht);
 
 	cookie = xcb_copy_area_checked(w->disp->c, rst->id, w->id, w->disp->gc0id, r_from.min.x, r_from.min.y, r_to.min.x, r_to.min.y, wd, ht);
 
@@ -336,8 +368,7 @@ newraster(Display *disp, Rect r)
 	rst->disp = disp;
 	rst->id = xcb_generate_id(disp->c);
 	rst->r = r;
-	
-	wtlog(2, "id = %d, wd = %d, ht = %d\n", rst->id, dRx(r), dRy(r));
+
 	cookie = xcb_create_pixmap_checked(rst->disp->c, rst->disp->s->root_depth, rst->id, rootwin(rst->disp).id, dRx(r), dRy(r));
 
 	if ((err = xcb_request_check(rst->disp->c, cookie))) {
