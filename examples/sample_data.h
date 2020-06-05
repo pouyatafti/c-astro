@@ -40,6 +40,8 @@ CameraAngle samples_angle[] = {
 	}
 };
 
+#define N_OBJECTS 6
+
 EquatorialLocation sample_object[] = {
 	{
 		/* Polaris Aa */
