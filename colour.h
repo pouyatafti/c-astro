@@ -1,84 +1,97 @@
-/* requires: algebra.h */
+/* requires: stdint.h */
 
 #ifndef __CASTRO_COLOUR_H__
 #define __CASTRO_COLOUR_H__
 
-#ifndef COLOUR_EPS
-#define COLOUR_EPS 1e-6
+#ifndef EPS
+#define EPS 1e-6
 #endif
 
-/* CIE xyY values */
-typedef struct CIExyY CIExyY;
-struct CIExyY {
-	double x;
-	double y;
-	double Y;
+#define sRGBred ( (CieXYZ) { .c.X = 0.412453, .c.Y = 0.212671 , .c.Z = 0.019334} )
+#define sRGBgrn ( (CieXYZ) { .c.X = 0.357580, .c.Y = 0.715160, .c.Z = 0.119193} )
+#define sRGBblu ( (CieXYZ) { .c.X = 0.180423, .c.Y = 0.072169, .c.Z = 0.950227} )
+#define sRGBblk ( (CieXYZ) { .c.X = 0.001901, .c.Y = 0.002, .c.Z = 0.002178} )
+#define sRGBwht ( (CieXYZ) { .c.X = 0.95047, .c.Y = 1.0, .c.Z = 1.08883} )
+
+typedef union CieXYZ CieXYZ;
+union CieXYZ {
+	struct {
+		double X;
+		double Y;
+		double Z;
+	} c;
+	double buf[3];
 };
 
-/* RGB values (linear) */
-typedef struct RGBc RGBc;
-struct RGBc {
-	double r;
+typedef union RGBc RGBc;
+union RGBc {
+	struct {
+		double r;
+		double g;
+		double b;
+	} c;
+	double buf[3];
+};
+
+
+typedef struct Primcolour Primcolour;
+struct Primcolour {
+	CieXYZ xyz;
 	double g;
-	double b;
+	double (*gfun)(double u, double g);
+
+	uint8_t depth;
+	uint64_t minlevel;
+	uint64_t maxlevel;
+
+	uint64_t nlevels;
+	double *u; 
 };
 
-/* RGB index */
-typedef struct RGBi RGBi;
-struct RGBi {
-	int R;
-	int G;
-	int B;
-};
+void *newpcolour(uint8_t depth);
+void freepcolour(Primcolour *pc);
 
-typedef struct CProfile CProfile;
-struct CProfile {
-	int depth;		/* depth per channel in bits */
-	CIExyY red;
-	CIExyY grn;
-	CIExyY blu;
-	CIExyY wht;
+void initpcolour(Primcolour *pc, CieXYZ xyz, uint64_t minlevel, uint64_t maxlevel, double g, double (*gfun)(double u, double g));
+
+double gammasRGB(double u, double g);
+
+#define pcolouri2u(pc, i) ( (pc)->u[(i)] )
+
+uint64_t pcolouru2i(Primcolour *pc, double v);
+
+
+typedef struct Colours Colours;
+struct Colours {
+	Primcolour *red;
+	Primcolour *grn;
+	Primcolour *blu;
+
+	CieXYZ blk;
+	CieXYZ wht;
+
+	/* everything below here is set by the initialiser */
 	RGBc X;
 	RGBc Y;
 	RGBc Z;
-	double gR;
-	double gG;
-	double gB;
-	double *gcR;
-	double *gcG;
-	double *gcB;
-	double (*gRfun)(double r, double gR);
-	double (*gGfun)(double g, double gG);
-	double (*gBfun)(double b, double gB);
+
+	double *Mt[3];
+	double *invMt[3];
+	double K[3]; /* white compensation to map RGBc {1,1,1} to white (wrong von Kries) */
 };
 
-CProfile *newcp(int depth);
-void freecp(CProfile *cp);
+void *newcolours(uint8_t depth);
+void freecolours(Colours *cs);
 
-void
-initcp(
-	CProfile *cp,
-	CIExyY red, CIExyY grn, CIExyY blu, CIExyY wht,
-	double gR, double gG, double gB,
-	double (*gRfun)(double r, double gR),
-	double (*gGfun)(double g, double gG),
-	double (*gBfun)(double b, double gB)
-);
+int initcolours(Colours *cs, Primcolour *red, Primcolour *grn, Primcolour *blu, CieXYZ blk, CieXYZ wht);
+int initsRGB(Colours *cs);
 
-void initsRGB(CProfile *cp);
+/* RGB{0,0,0} is XYZ{0,0,0}, RGB{1,0,0} is the red prim colour, and so forth */
+void rgb2xyz_abs(Colours *cs, RGBc *rgb, CieXYZ *xyz);
+void xyz2rgb_abs(Colours *cs, CieXYZ *xyz, RGBc *rgb);
 
-double sRGBgamma(double u, double g);
+/* RGB{0,0,0} is black, RGB{1,1,1} is white, RGB{1, 0, 0} is scaled relative to the red prim colour, and so forth */
+void rgb2xyz_rel(Colours *cs, RGBc *rgb, CieXYZ *xyz);
+void xyz2rgb_rel(Colours *cs, CieXYZ *xyz, RGBc *rgb);
 
-RGBc xyY2RGBc(CProfile *cp, CIExyY c);
-CIExyY RGBc2xyY(CProfile *cp, RGBc c);
-
-RGBc i2RGBc(CProfile *cp, RGBi c);
-RGBi c2RGBi(CProfile *cp, RGBc c);
-
-#define xyY2X(xyY) ( (xyY).x/(xyY).y*(xyY).Y )
-#define xyY2Y(xyY) ( (xyY).Y )
-#define xyY2Z(xyY) ( (1 - (xyY).x - (xyY).y)/(xyY).y*(xyY).Y )
-
-#define rgbc2rgbc(cpin, cpout, c) ( xyY2rgbc(cpout, rgbc2xyY(cpin, c)) )
 
 #endif

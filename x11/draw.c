@@ -51,7 +51,7 @@ flushconn(Connection *c)
 
 
 Display *
-newdisplay(Connection *c, int n, CProfile *cp)
+newdisplay(Connection *c, int n, Colours *cs)
 {
 	Display *d;
 
@@ -147,15 +147,23 @@ newdisplay(Connection *c, int n, CProfile *cp)
 		return nil;
 	}
 
-	if ((d->cp = newcp(depth)) == nil) {
-		wtlog(1,"can't create new custom colour profile\n");
+	if ((d->cs = newcolours(depth)) == nil) {
+		wtlog(1,"can't alloc new custom colour profile\n");
 		freedisplay(d);
 		return nil;
 	}
-	if (cp != nil) {
-		initcp(cp, cp->red, cp->grn, cp->blu, cp->wht, cp->gR, cp->gG, cp->gB, cp->gRfun, cp->gGfun, cp->gBfun);
+	if (cs != nil) {
+		if (initcolours(d->cs, cs->red, cs->grn, cs->blu, cs->blk, cs->wht)) {
+			wtlog(1,"can't init new custom colour profile\n");
+			freedisplay(d);
+			return nil;
+		}			
 	} else {
-		initsRGB(cp);
+		if (initsRGB(d->cs)) {
+			wtlog(1,"can't init new sRGB colour profile\n");
+			freedisplay(d);
+			return nil;
+		}
 	}
 
 	wtlog(1,"d = %p\n", d);
@@ -165,8 +173,8 @@ newdisplay(Connection *c, int n, CProfile *cp)
 void
 freedisplay(Display *d)
 {
-	if (d->cp) {
-		freecp(d->cp);
+	if (d->cs) {
+		freecolours(d->cs);
 	}
 
 	if (d->root) {
@@ -384,7 +392,6 @@ freeraster(Raster *rst)
 	free(rst);
 }
 
-
 int
 ldraster(Raster *rst, Image *im, Rect r_from, Rect r_to)
 {
@@ -397,7 +404,7 @@ ldraster(Raster *rst, Image *im, Rect r_from, Rect r_to)
 	Point pt;
 
 	int srcBs = imchanbytesize(im->typ);
-	int destBs = rst->disp->cp->depth / 8;
+	int destBs = rst->disp->cs->red->depth / 8; /* XXX */
 	int destBpp = displaybpp(rst->disp) / 8;
 	int padding =  destBpp - 3*destBs;
 

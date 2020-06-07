@@ -7,7 +7,7 @@ BASE_OBJS=algebra.o
 IMAGE_OBJS=image.o io/raw.o
 IMAGE_PNG_OBJS=io/lpng.o
 TELESCOPE_OBJS=telescope.o
-X11_OBJS=colour.c x11/draw.o x11/wevent.o
+X11_OBJS=colour.o x11/draw.o x11/wevent.o
 
 EXAMPLES=examples/startrack examples/deformation examples/xview
 TESTS=tests/test_algebra
