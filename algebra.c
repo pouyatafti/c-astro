@@ -146,20 +146,20 @@ bicgstab(
 	As = work[6];
 
 	memmove(r, b, ddim);
-	matvec(r, A, 0, x, 1, -1, dim);
+	(*matvec)(r, A, 0, x, 1, -1, dim);
 	memmove(rhat0, r, ddim);
 	memmove(p, r, ddim);
 
 	for (i = 0; i < maxiter; ++i) {
 		rrhat0 = dotprod(r, rhat0, dim);
-		matvec(Ap, A, 0, p, 0, 1, dim);
+		(*matvec)(Ap, A, 0, p, 0, 1, dim);
 		alpha = rrhat0 / dotprod(Ap, rhat0, dim);
 		vecadd(s, r, Ap, 0, 1, -alpha, dim);
 		if (dotprod(s, s, dim) < eps0*eps0) {
 			vecadd(x, x, p, 0, 1, alpha, dim);
 			break;
 		}
-		matvec(As, A, 0, s, 0, 1, dim);
+		(*matvec)(As, A, 0, s, 0, 1, dim);
 		om = dotprod(As, s, dim) / dotprod(As, As, dim);
 		vecadd(x, p, s, 1, alpha, om, dim);
 		vecadd(rnext, s, As, 0, 1, -om, dim);

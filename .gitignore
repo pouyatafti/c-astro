@@ -3,3 +3,4 @@ _playground/
 examples/startrack
 examples/deformation
 examples/xview
+tests/test_algebra
