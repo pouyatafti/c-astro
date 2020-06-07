@@ -85,4 +85,16 @@ Point roundlc(Lattice lc, RealPoint pt); /* nearest lattice point */
 #define lc2ix(l, p) ( (l).uix.num*((p).x-(l).o.x)/(l).uix.den + (l).uiy.num*((p).y-(l).o.y)/(l).uiy.den )
 #define lc2iy(l, p) ( (l).vix.num*((p).x-(l).o.x)/(l).vix.den + (l).viy.num*((p).y-(l).o.y)/(l).viy.den )
 
+double dotprod(double *x, double *y, int dim);
+double *vecadd(double *dest, double *x, double *y, double a, double b, double c, int dim); /* dest = a dest + b x + c y */
+double *matvecmult(double *dest, void *A, int transpose, double *x, double a, double b, int dim); /* dest = a dest + b A x */
+
+/* work is of size [7, dim] and should be initialised with zeros */
+double *bicgstab(
+	double *x, void *A, double *b,
+	double **work,
+	double *(*matvec)(double *dest, void *A, int transpose, double *x, double a, double b, int dim),
+	int dim, long maxiter, double eps0
+);
+
 #endif

@@ -10,14 +10,16 @@ TELESCOPE_OBJS=telescope.o
 X11_OBJS=colour.c x11/draw.o x11/wevent.o
 
 EXAMPLES=examples/startrack examples/deformation examples/xview
+TESTS=tests/test_algebra
 
 examples: ${EXAMPLES}
+tests: ${TESTS}
 
 clean:
 	rm -f *.o
 	rm -f */*.o
 	rm -f ${EXAMPLES}
-
+	rm -f ${TESTS}
 
 .SUFFIXES: .c .o
 
@@ -32,6 +34,9 @@ examples/deformation: ${BASE_OBJS} ${TELESCOPE_OBJS} ${IMAGE_OBJS} ${IMAGE_PNG_O
 
 examples/xview: ${BASE_OBJS} ${IMAGE_OBJS} ${X11_OBJS} examples/xview.o
 	${CC} ${LDFLAGS} -lxcb ${.ALLSRC} -o ${.TARGET}
+
+tests/test_algebra: ${BASE_OBJS} tests/test_algebra.o
+	${CC} ${LDFLAGS} ${.ALLSRC} -o ${.TARGET}
 
 
 

@@ -9,4 +9,11 @@ struct llnode {
 	void *data;
 };
 
+typedef struct ll2node ll2node;
+struct ll2node {
+	ll2node *prev;
+	ll2node *next;
+	void *data;
+};
+
 #endif
